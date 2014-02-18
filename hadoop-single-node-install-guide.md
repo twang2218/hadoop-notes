@@ -1,5 +1,19 @@
+> 本安装指南是针对 Ubuntu Server 12.04 进行 Hadoop 1.x 单节点伪分布模式配置的。其它系统或其它版本请酌情调整配置方法。
+
 一、安装虚拟机
 ================
+
+1.1 下载 ISO 文件
+
+我们将下载 Ubuntu 12.04 LTS 服务器版 64位版本。(对于无法使用64位版本的，可以使用32位版本代替，但是生产环境中，由于内存常常会超过4G，因此64位版本是必须的。）
+
+访问 http://www.ubuntu.org.cn/download/server  点击“获取 Ubuntu 12.04 LTS”
+
+1.2 添加虚拟机
+
+我们使用 VirtualBox 来做全部的实验。这是一个免费的、开源的虚拟机，非常不错，推荐使用。
+
+...
 
 二、准备安装环境
 ================
@@ -17,10 +31,13 @@
 
 > 我知道许多人会使用 `vi`，但是从易用性上，`nano` 要比 `vi` 简单。使用 `nano` 不需要去背那些 `vi` 命令和快捷键，很适合新手。`nano` 在许多 ubuntu 系统里都是默认安装的，不需要额外的安装的。在此写进安装命令只是以防万一 （比如在使用 `vmbuilder` 构建的精简版的 Ubuntu 中，很多命令都不会被安装）。
 
+> `unzip` 是可选的，但我们将来会用它对下载的 `.zip` 数据文件进行解压缩。
+> `htop` 也是可选的，但是使用 `htop` 对节点负载进行分析与观察是非常有帮助的。
+
 和 Windows 不同，在 Ubuntu 里，安装软件非常简单，只需要一条命令即可，系统会从网上找到需要的软件包进行下载并安装。而且，你不需要担心版本之间的依赖关系、是否互相有冲突、安装位置等等。安装上面的软件，只需执行：
 
 ```bash
-sudo apt-get install openjdk-7-jdk openssh-server nano
+sudo apt-get install openjdk-7-jdk openssh-server nano unzip htop
 ```
 
 当询问是否安装的时候，按 `y` 回车
@@ -44,33 +61,15 @@ Hadoop 的 master 在控制 slaves 的时候，比如 NameNode 启动、停止 D
 ssh-keygen
 ```
 
-一路回车即可，不需要输入任何东西，就生成好了。这条命令会将生成的密钥对放入 `~/.ssh` 目录下，因此，可以执行下面的命令去确认该文件夹里面是否已经成功存在所生成的密钥：
+一路回车即可，不需要输入任何东西，就生成好了。这条命令会将生成的密钥对放入 `~/.ssh` 目录下，因此，可以执行 `ls ~/.ssh` 去确认该文件夹里面是否已经成功存在所生成的密钥。
+
+然后，我们需要将公钥添加到目标主机的授权列表里。比如，在这里我们将先配置 Hadoop 伪分布模式，因此我们需要保证 SSH 登录本机的时候，不需要密码。如果之前没有配置过使用密钥登录的，`ssh localhost` 会提示用户输入密码。这是我们不希望出现的。于是我们用下面的这一条命令来将公钥添加到本地的授权列表。
 
 ```bash
-ls ~/.ssh
+ssh-copy-id -i localhost
 ```
 
-然后，我们需要将公钥添加到目标主机的授权列表里。
-
-比如，在这里我们将先配置 Hadoop 伪分布模式，因此我们需要保证 SSH 登录本机的时候，不需要密码。我们可以先登录本机确认一下：
-
-```bash
-ssh localhost
-```
-
-如果之前没有配置过密钥登录的，这里会提示用户输入密码。这是我们不希望出现的。于是我们用下面的这一条命令来将公钥添加到本地的授权列表。
-
-```bash
-ssh-copy-id -i ~/.ssh/id_rsa.pub localhost
-```
-
-提示输入本机密码，输入密码后回车，这样就把公钥添加到本机的授权列表了。大家可以执行：
-
-```bash
-ls ~/.ssh
-```
-
-来看一眼，会发现，里面多了一个 `authorized_keys` 文件，这个文件就是授权公钥列表文件。这里面包含的就是我们刚刚提交的公钥。有了这个，我们登录本机就不需要密码了。
+提示输入本机密码，输入密码后回车，这样就把公钥添加到本机的授权列表了。可以执行 `ls ~/.ssh`，会发现，目录里面多了一个 `authorized_keys` 文件，这个文件就是授权公钥列表文件。这里面包含的就是我们刚刚提交的公钥。有了这个，我们登录本机就不需要密码了。
 
 在命令行里再登录一下试试看：
 
@@ -195,7 +194,9 @@ sudo ifdown eth0 && sudo ifup eth0
 
 可以用 `ifconfig` 来检查自己的网络配置，或者直接 `ssh hadoop-master` 试一下。如果碰到错误，检查一下配置文件。
 
-
+> 从这里开始，我们就可以不用在虚拟机窗口中配置了，我们可以使用 SSH 客户端（即终端），如[Putty](http://www.putty.org/)、[Bitvise SSH Client](http://www.bitvise.com/ssh-client-download)、[WinSCP](http://winscp.net/eng/docs/free_ssh_client_for_windows)、[Xshell](http://www.netsarang.com/products/xsh_overview.html)等工具来连接 `hadoop-master`。
+> 使用终端的好处是显而易见的，比如我们可以方便的复制、粘贴文字到终端窗口，也可以将里面的内容复制、粘贴出来。此外，上面的许多 SSH 客户端支持 SFTP，通过 SFTP 我们可以很轻松的将文件上传到 Linux 主机上。
+> 需要注意的是，在主机上也需要配置上述主机名和IP地址对应关系的，对于 Linux 来说，和第三步一样，配置 `/etc/hosts` 文件；对于 Windows 而言，是编辑 `C:\Windows\System32\drivers\etc\hosts` 文件，都是将第3步的内容追加到文件末尾。
 
 ### 2.2.3 禁用 IPv6
 
@@ -217,6 +218,9 @@ net.ipv6.conf.all.disable_ipv6=1
 sudo sysctl -p /etc/sysctl.d/10-disable-ipv6.conf
 ```
 
+可以使用命令 `ifconfig | grep inet6` 检查是否已经禁用了 IPv6。如果没有任何结果返回，则说明 IPv6 已经成功禁用了；否则，则说明禁用 IPv6 没有成功。
+
+
 三、安装 Hadoop
 ==================
 
@@ -232,6 +236,7 @@ sudo sysctl -p /etc/sysctl.d/10-disable-ipv6.conf
 ```bash
 ssh wombat@hadoop-master
 ```
+
 登录进去后，我们准备 hadoop 的环境以及下载。我们将创建一个 `~/hadoop` 目录，以后所有的 hadoop 相关的软件都会放到该目录下。
 
 ```bash
@@ -239,7 +244,7 @@ mkdir ~/hadoop
 cd ~/hadoop
 ```
 
-> 这里需要说明的是，许多教程都最终将 hadoop 放到了 `/usr/local/hadoop` 目录下，这样做会带来很多权限问题。而很多教程使用 `chown` 来解决权限冲突，这是非常错误的，很多时候是因为写这些教程的人对 Linux 不熟悉，把 Windows 的一些习惯带到了 Linux 里来。生产环境的搭建绝不是这么简单粗暴的改变所有权。除了需要将 hadoop 放到符合 Linux 目录结构的位置外，包括配置文件和日志，也都应该指向正确的位置，并且建立适当的用户组，以及对不同的目录使用不同的权限，这将引入很多额外的工作，因此不适合在初学时涉及。对于开发和实验环境的搭建，我们这里的做法非常简单，足以胜任后续的学习、开发。
+> 这里需要说明的是，许多教程都最终将 hadoop 放到了 `/usr/local/hadoop` 目录下，这样做会带来很多权限问题。而很多教程或者没办法，最后使用 `root` 用户操作一切，或者使用 `chown` 来解决权限冲突，这是非常不好的，很多时候是因为写这些教程的人对 Linux 不熟悉，把 Windows 的一些习惯带到了 Linux 里来。生产环境的搭建绝不是这么简单粗暴的改变所有权，更不可能是这样子滥用`root`权限。除了需要将 hadoop 放到符合 Linux 目录结构的位置外，包括配置文件和日志，也都应该指向正确的位置，并且建立适当的用户组，以及对不同的目录使用不同的权限，这将引入很多额外的工作，因此不适合在初学时涉及。对于开发和实验环境的搭建，我们这里的做法非常简单，足以胜任后续的学习、开发。
 
 ```bash
 wget http://apache.dataguru.cn/hadoop/common/hadoop-1.2.1/hadoop-1.2.1-bin.tar.gz
@@ -270,12 +275,12 @@ tar -zxvf hadoop-1.2.1-bin.tar.gz
 3.2 配置 Hadoop
 ------------------
 
-### 3.2.1 配置 `.bashrc` 文件
+### 3.2.1 配置 `PATH` 环境变量
 
 hadoop 的可执行文件在 `hadoop-1.2.1/bin` 下，我们如果想执行该文件，或者使用完整路径的方式，或者将该路径加入到 `PATH` 环境变量中，以后我们直接执行文件即可。
 
 ```bash
-sudo nano ~/.bashrc
+nano ~/.profile
 ```
 
 在最后一行添加：
@@ -287,32 +292,36 @@ export PATH=$PATH:$HOME/hadoop/hadoop-1.2.1/bin
 保存退出。然后应用该配置。
 
 ```bash
-source ~/.bashrc
+source ~/.profile
 ```
 
-### 3.2.2 配置 `conf/hadoop-env.sh` 文件
+> 这里注意到有的教程提到的是修改 `.bashrc` 文件。在很多情况下这是工作的，但是某些情况下则不能工作，因此[Ubuntu 官网关于环境变量的配置](https://help.ubuntu.com/community/EnvironmentVariables#A.2BAH4ALw.profile) 建议放在`.profile`文件中。
 
-为方便起见，我们将当前目录换到 conf 目录下：
+
+### 3.2.2 配置 `JAVA_HOME` 环境变量
+
+
+Hadoop 需要在使用 `JAVA_HOME` 环境变量。由于该环境变量将在多处使用，并会在 `ssh` 命令形式使用，因此，我们将在全局环境变量中配置：
 
 ```bash
-cd hadoop-1.2.1/conf
+sudo nano /etc/environment
 ```
 
-Hadoop 需要在配置文件中指定 `JAVA_HOME` 环境变量。
+在文件最后添加：
 
 ```bash
-nano hadoop-env.sh
+JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/
 ```
 
-在最后一行添加：
+`Ctrl+x`，保存退出。
 
-```bash
-JAVA_HOME=/usr/lib/jvm/java-1.7.0-openjdk-amd64/
-```
+> 这里虽然也有 PATH 环境变量，但是不要在这里修改它，这里是全局变量。
 
-保存退出。
+> 有些教程建议修改 `/etc/profile` 文件，可是修改该文件后，`JAVA_HOME` 依旧是无法出现在 `ssh` 命令模式下的环境中，就导致了还必须同时设置 `conf/hadoop-env.sh` 文件中的 `JAVA_HOME`，否则，将会出现 `Error: JAVA_HOME is not set.` 的故障。可能是写教程的人不熟悉 `/etc/profile` 和 `/etc/environment` 的加载时间所致。这里我们只需修改 `/etc/environment`文件即可。
 
-此时，我们可以通过显示 hadoop 的版本来判断之前的配置是否正确。
+然后，`sudo reboot`，重新启动虚拟机，以让全局环境变量生效。
+
+重启后，我们可以通过显示 hadoop 的版本来判断之前的配置是否正确。
 
 ```bash
 hadoop version
@@ -322,59 +331,227 @@ hadoop version
 
 之前的配置一直是环境配置，现在才是真正的 Hadoop 相关的配置。对于单节点伪分布模式，配置非常简单，我们只需要修改三个 `*-site.xml` 文件即可。默认情况下，这三个文件都包含一个空的`<configuration>` ，在这里，我们需要为三个文件的`<configuration>`中加入对应的配置。
 
-#### `core-site.xml`:
+为方便起见，我们将当前目录换到 `conf` 目录下：
 
-```xml
-<property>
-    <name>fs.default.name</name>
-    <value>hdfs://h1-master:9000</value>
-</property>
+```bash
+cd hadoop-1.2.1/conf
 ```
 
+#### `core-site.xml`:
+
+`nano core-site.xml`
+
+在 `<configuration>`中加入：
+```xml
+    <property>
+        <name>fs.default.name</name>
+        <value>hdfs://hadoop-master:9000</value>
+    </property>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>${user.home}/hadoop/hdfs/tmp</value>
+    </property>
+```
+
+> 这里如果不设置 `hadoop.tmp.dir`，Hadoop 是可以正常运行的。但是其 HDFS 存储空降则使用的是 `/tmp` 目录，即内存，这显然不符合大容量存储的思想，因此我们需要将其指定到硬盘上。在这里，我们使用了 `${user.home}` 变量，该变量代表的是用户主目录 `$HOME`。
+> 这个目录需要记住，因为后续排障过程中，可能会需要到这个目录中检查 `current/VERSION` 文件的`namespaceID`以及`storageID`等。
 
 #### `hdfs-site.xml`:
 
-```xml
-<property>
-    <name>dfs.replication</name>
-    <value>1</value>
-</property>
-```
+`nano hdfs-site.xml`
 
+在 `<configuration>`中加入：
+
+```xml
+    <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+    </property>
+```
 
 #### `mapred-site.xml`:
 
+`nano mapred-site.xml`
+
+在 `<configuration>`中加入：
+
 ```xml
-<property>
-    <name>mapred.job.tracker</name>
-    <value>h1-master:9001</value>
-</property>
+    <property>
+        <name>mapred.job.tracker</name>
+        <value>hadoop-master:9001</value>
+    </property>
 ```
 
-分别保存退出。至此，Hadoop 单节点伪分布模式就配置完毕了。
+分别保存退出。
+
+### 3.2.4 格式化 NameNode
+
+在配置完成后，我们需要进行一次 NameNode 的格式化。如果未格式化，NameNode 会因 HDFS 所需的数据结构错误而无法启动。
+
+```bash
+hadoop namenode -format
+```
+
+至此，Hadoop 单节点伪分布模式就配置完毕了。
 
 
+3.3 验证 Hadoop 已安装正常
+------------------
 
+之前已经将 Hadoop 配置完毕，那么接下来我们如何知道 Hadoop 配置正确了呢？首先我们需要确定 Hadoop 能否运行。
 
+### 3.3.1 启动 Hadoop
 
+```bash
+start-all.sh
+```
 
+这条命令将根据之前配置的 *-site.xml，来启动 Hadoop 云（当然，此时，我们这个云是伪分布，就一个节点）。
 
+然后，我们需要确定节点是否正常运行了。
 
+```bash
+jps
+```
 
+这条命令可以帮助我们查看当前系统运行的 Java 程序进程。如果配置正确，我们将看到类似下面的结果：
 
+```bash
+2613 Jps
+2018 NameNode
+2388 JobTracker
+2143 DataNode
+2514 TaskTracker
+2290 SecondaryNameNode
+```
 
+需要注意的是，单节点伪分布正确运行后，应该会有5个组件运行：`NameNode`、`DataNode`、`SecondaryNameNode`、`JobTracker`、以及`TaskTracker`。缺少任何一个，都说明配置上有所错误。需要回去检查各项配置。
 
+> 在出现故障后向论坛、朋友求助的时候，需要给对方提供你的 `conf` 目录下的配置文件、以及日志，否则对方无法理解你的故障可能的问题。
+> 日志目录：$HOME/hadoop/hadoop-1.2.1/logs
 
+### 3.3.2 运行示例程序
 
+就如同我们搭建好其它语言的编译环境后，会编写一个 `HelloWorld` 程序来测试整个环境是否工作一样，在 Hadoop 中，我们有自己的`HelloWorld`类的程序，叫做`WordCount`。
 
+`ＷordCount` 是对纯文本进行单词出现次数统计的，为了使用 `WordCount`，我们需要先准备一些数据，也就是一些文本文件。这里，我们使用 [古腾堡计划](http://www.gutenberg.org/)中的英文图书。
 
+#### 下载
+```bash
+mkdir -p ~/hadoop/data/book/download
+cd ~/hadoop/data/book/download
+wget -r -l 2 -H "http://www.gutenberg.org/robot/harvest?filetypes[]=txt&langs[]=en"
 
+```
 
+这里`-l 2`是只取 2 级，因此并没有下载很多书，大约有200本英文书籍，解压缩后大约 90MB 左右。，如果觉得数据量不够可以酌情增加一些。根据当前的网速，下载需要一段时间。下载完成后，会出现类似于：
 
+```
+FINISHED --2014-02-18 19:44:10--
+Total wall clock time: 7m 42s
+Downloaded: 204 files, 34M in 6m 39s (86.0 KB/s)
+```
 
+#### 解压缩
 
+```bash
+for f in `find ~/hadoop/data/book/download -name *.zip` ; do unzip -j $f *.txt -d ~/hadoop/data/book/input; done
+```
 
+#### 将书籍放到 HDFS 云
 
+```bash
+hadoop fs -put ~/hadoop/data/book/input /data/book/input
+```
+
+上传到云后，我们可以用过命令 `hadoop fs -ls /data/book/input` 来检查是否都已进入云了。
+
+#### 执行 `WordCount` 示例程序
+
+```bash
+hadoop jar ~/hadoop/hadoop-1.2.1/hadoop-examples-1.2.1.jar wordcount /data/book/input /data/book/output
+```
+
+> 在执行过程中，可以新开一个 SSH 终端窗口连接到 `hadoop-master`，然后运行命令 `htop` 来观察任务执行期间的节点负载情况，包括内存占用率、CPU占用率、最消耗资源的程序等等。这些信息将来可能会作为云性能优化调整的依据。
+
+执行结束后，会输出下面类似的输出：
+
+```
+14/02/18 20:26:29 INFO input.FileInputFormat: Total input paths to process : 201
+14/02/18 20:26:29 INFO util.NativeCodeLoader: Loaded the native-hadoop library
+14/02/18 20:26:29 WARN snappy.LoadSnappy: Snappy native library not loaded
+14/02/18 20:26:30 INFO mapred.JobClient: Running job: job_201402190610_0002
+14/02/18 20:26:31 INFO mapred.JobClient:  map 0% reduce 0%
+14/02/18 20:26:42 INFO mapred.JobClient:  map 1% reduce 0%
+14/02/18 20:26:45 INFO mapred.JobClient:  map 2% reduce 0%
+...
+14/02/18 20:30:32 INFO mapred.JobClient:  map 99% reduce 32%
+14/02/18 20:30:34 INFO mapred.JobClient:  map 100% reduce 32%
+14/02/18 20:30:40 INFO mapred.JobClient:  map 100% reduce 100%
+14/02/18 20:30:41 INFO mapred.JobClient: Job complete: job_201402190610_0002
+14/02/18 20:30:41 INFO mapred.JobClient: Counters: 29
+14/02/18 20:30:41 INFO mapred.JobClient:   Job Counters 
+14/02/18 20:30:41 INFO mapred.JobClient:     Launched reduce tasks=1
+14/02/18 20:30:41 INFO mapred.JobClient:     SLOTS_MILLIS_MAPS=451625
+14/02/18 20:30:41 INFO mapred.JobClient:     Total time spent by all reduces waiting after reserving slots (ms)=0
+14/02/18 20:30:41 INFO mapred.JobClient:     Total time spent by all maps waiting after reserving slots (ms)=0
+14/02/18 20:30:41 INFO mapred.JobClient:     Launched map tasks=201
+14/02/18 20:30:41 INFO mapred.JobClient:     Data-local map tasks=201
+14/02/18 20:30:41 INFO mapred.JobClient:     SLOTS_MILLIS_REDUCES=228055
+14/02/18 20:30:41 INFO mapred.JobClient:   File Output Format Counters 
+14/02/18 20:30:41 INFO mapred.JobClient:     Bytes Written=8206570
+14/02/18 20:30:41 INFO mapred.JobClient:   FileSystemCounters
+14/02/18 20:30:41 INFO mapred.JobClient:     FILE_BYTES_READ=41640360
+14/02/18 20:30:41 INFO mapred.JobClient:     HDFS_BYTES_READ=92553354
+14/02/18 20:30:41 INFO mapred.JobClient:     FILE_BYTES_WRITTEN=90941789
+14/02/18 20:30:41 INFO mapred.JobClient:     HDFS_BYTES_WRITTEN=8206570
+14/02/18 20:30:41 INFO mapred.JobClient:   File Input Format Counters 
+14/02/18 20:30:41 INFO mapred.JobClient:     Bytes Read=92529611
+14/02/18 20:30:41 INFO mapred.JobClient:   Map-Reduce Framework
+14/02/18 20:30:41 INFO mapred.JobClient:     Map output materialized bytes=37792708
+14/02/18 20:30:41 INFO mapred.JobClient:     Map input records=1868098
+14/02/18 20:30:41 INFO mapred.JobClient:     Reduce shuffle bytes=37792708
+14/02/18 20:30:41 INFO mapred.JobClient:     Spilled Records=5323388
+14/02/18 20:30:41 INFO mapred.JobClient:     Map output bytes=151082969
+14/02/18 20:30:41 INFO mapred.JobClient:     Total committed heap usage (bytes)=27599167488
+14/02/18 20:30:41 INFO mapred.JobClient:     CPU time spent (ms)=251850
+14/02/18 20:30:41 INFO mapred.JobClient:     Combine input records=15649835
+14/02/18 20:30:41 INFO mapred.JobClient:     SPLIT_RAW_BYTES=23743
+14/02/18 20:30:41 INFO mapred.JobClient:     Reduce input records=2528771
+14/02/18 20:30:41 INFO mapred.JobClient:     Reduce input groups=561390
+14/02/18 20:30:41 INFO mapred.JobClient:     Combine output records=2636459
+14/02/18 20:30:41 INFO mapred.JobClient:     Physical memory (bytes) snapshot=36463890432
+14/02/18 20:30:41 INFO mapred.JobClient:     Reduce output records=561390
+14/02/18 20:30:41 INFO mapred.JobClient:     Virtual memory (bytes) snapshot=218530009088
+14/02/18 20:30:41 INFO mapred.JobClient:     Map output records=15542147
+```
+
+如果有错误，会有异常报错。执行下面的命令确定正常执行完毕：
+
+```bash
+hadoop fs -ls /data/book/output/
+```
+
+该命令会列出我们指定的HDFS云中的输出目录内容：
+
+```
+Found 3 items
+-rw-r--r--   1 tao supergroup          0 2014-02-18 20:30 /data/book/output/_SUCCESS
+drwxr-xr-x   - tao supergroup          0 2014-02-18 20:26 /data/book/output/_logs
+-rw-r--r--   1 tao supergroup    8206570 2014-02-18 20:30 /data/book/output/part-r-00000
+```
+
+注意其中若存在 `_SUCCESS` 文件，即说明执行成功了。统计的结果就在 `part-r-xxxxx` 这类文件里。可以拷贝到本地查看其内容，也可以通过 `http://hadoop-master:50070` 的 Web 界面来查看其内容。
+
+### 3.3.3 停止 Hadoop
+
+我们知道了怎么启动 Hadoop 云；知道了怎么运行 Hadoop 程序；接下来我们需要停止 Hadoop 云：
+
+```bash
+stop-all.sh
+```
+
+可以通过 `jps` 确定一下确实都关闭了。如果需要关机，则执行 `sudo poweroff` 即可。
 
 
 
