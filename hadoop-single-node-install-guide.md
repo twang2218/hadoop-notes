@@ -23,14 +23,17 @@
 
 首先，Hadoop 需要 Java 运行环境。
 
-| 这里，我们使用系统自带的 OpenJDK 7。关于是否应该使用 Oracle 的 JDK 的问题，在这里完全没有必要。在 Java 6 的年代，由于 Java 的开放源代码进程问题，OpenJDK 6 和 Oracle JDK 6 还是有一些不一致的，进入到 Java 7后，OpenJDK 和 Oracle JDK 已经一致了，所以可以放心的使用 OpenJDK 7。这一点 Hadoop 官方已经明确给出确认了，需要了解进一步信息的可以看这里：http://wiki.apache.org/hadoop/HadoopJavaVersions |
-|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
+| Note: |
+| :---- |
+| *这里，我们使用系统自带的 OpenJDK 7。关于是否应该使用 Oracle 的 JDK 的问题，在这里完全没有必要。在 Java 6 的年代，由于 Java 的开放源代码进程问题，OpenJDK 6 和 Oracle JDK 6 还是有一些不一致的，进入到 Java 7后，OpenJDK 和 Oracle JDK 已经一致了，所以可以放心的使用 OpenJDK 7。这一点 Hadoop 官方已经明确给出确认了，需要了解进一步信息的可以看这里：http://wiki.apache.org/hadoop/HadoopJavaVersions* |
 
 其次，Hadoop 需要使用 SSH 连接各个主机。即使是伪分布模式，也需要连接本机。所以需要安装 SSH 服务器。
 
 此外，我们编辑配置文件的时候，我将使用 `nano` 编辑器。
 
-> 我知道许多人会使用 `vi`，但是从易用性上，`nano` 要比 `vi` 简单。使用 `nano` 不需要去背那些 `vi` 命令和快捷键，很适合新手。`nano` 在许多 ubuntu 系统里都是默认安装的，不需要额外的安装的。在此写进安装命令只是以防万一 （比如在使用 `vmbuilder` 构建的精简版的 Ubuntu 中，很多命令都不会被安装）。
+| Note: |
+| :---- |
+| *我知道许多人会选择使用 `vi`，但是从易用性上，`nano` 要比 `vi` 简单。使用 `nano` 不需要去背那些 `vi` 命令和快捷键，很适合新手。`nano` 在许多 ubuntu 系统里都是默认安装的，不需要额外的安装的。在此写进安装命令只是以防万一 （比如在使用 `vmbuilder` 构建的精简版的 Ubuntu 中，很多命令都不会被安装）。* |
 
 > `unzip` 是可选的，但我们将来会用它对下载的 `.zip` 数据文件进行解压缩。
 > `htop` 也是可选的，但是使用 `htop` 对节点负载进行分析与观察是非常有帮助的。
@@ -80,13 +83,9 @@ ssh localhost
 
 如果配置都是正确的，会发现，没有刚才的密码提示了。
 
-> 注意到网上许多教程在配置无密码登录的时候，都是用的是命令：
-> 
-> ```bash
-> cat ~/.ssh/id_rsa.pub >> ~/.ssh/authroized_keys
-> ```
-> 
-> 这将直接手动修改授权文件`authroized_keys`。这是比较古老的方法，可以工作，但是已不推荐使用了，因为如果命令敲错，比如少打了一个大于号，就会导致认证密钥列表被覆盖，从而导致其它的一些应用登录可能出现问题，又或者授权文件的文件名敲错，而不会有任何提示，结果还是无法无密码登录等。而且，这个方法在跨主机的时候就更复杂了，还需要把文件先复制到目标主机上。因此，除非有什么特殊的原因，推荐使用刚才所描述的 `ssh-copy-id`。
+| Note: |
+| :---- |
+| *注意到网上许多教程在配置无密码登录的时候，都是用的是命令 `cat ~/.ssh/id_rsa.pub >> ~/.ssh/authroized_keys` 这将直接手动修改授权文件 `authroized_keys`。这是比较古老的方法，可以工作，但是已不推荐使用了，因为如果命令敲错，比如少打了一个大于号，就会导致认证密钥列表被覆盖，从而导致其它的一些应用登录可能出现问题，又或者授权文件的文件名敲错，而不会有任何提示，结果还是无法无密码登录等。而且，这个方法在跨主机的时候就更复杂了，还需要把文件先复制到目标主机上。因此，除非有什么特殊的原因，推荐使用刚才所描述的 `ssh-copy-id`。*|
 
 
 ### 2.2.2 配置主机名及静态IP地址
@@ -195,9 +194,9 @@ sudo ifdown eth0 && sudo ifup eth0
 
 可以用 `ifconfig` 来检查自己的网络配置，或者直接 `ssh hadoop-master` 试一下。如果碰到错误，检查一下配置文件。
 
-> 从这里开始，我们就可以不用在虚拟机窗口中配置了，我们可以使用 SSH 客户端（即终端），如[Putty](http://www.putty.org/)、[Bitvise SSH Client](http://www.bitvise.com/ssh-client-download)、[WinSCP](http://winscp.net/eng/docs/free_ssh_client_for_windows)、[Xshell](http://www.netsarang.com/products/xsh_overview.html)等工具来连接 `hadoop-master`。
-> 使用终端的好处是显而易见的，比如我们可以方便的复制、粘贴文字到终端窗口，也可以将里面的内容复制、粘贴出来。此外，上面的许多 SSH 客户端支持 SFTP，通过 SFTP 我们可以很轻松的将文件上传到 Linux 主机上。
-> 需要注意的是，在主机上也需要配置上述主机名和IP地址对应关系的，对于 Linux 来说，和第三步一样，配置 `/etc/hosts` 文件；对于 Windows 而言，是编辑 `C:\Windows\System32\drivers\etc\hosts` 文件，都是将第3步的内容追加到文件末尾。
+| Note: |
+| :---- |
+| *从这里开始，我们就可以不用在虚拟机窗口中配置了，我们可以使用 SSH 客户端（即终端），如[Putty](http://www.putty.org/)、[Bitvise SSH Client](http://www.bitvise.com/ssh-client-download)、[WinSCP](http://winscp.net/eng/docs/free_ssh_client_for_windows)、[Xshell](http://www.netsarang.com/products/xsh_overview.html)等工具来连接 `hadoop-master`。<br /><br /> 使用终端的好处是显而易见的，比如我们可以方便的复制、粘贴文字到终端窗口，也可以将里面的内容复制、粘贴出来。此外，上面的许多 SSH 客户端支持 SFTP，通过 SFTP 我们可以很轻松的将文件上传到 Linux 主机上。<br /><br /> 需要注意的是，在主机上也需要配置上述主机名和IP地址对应关系的，对于 Linux 来说，和第三步一样，配置 `/etc/hosts` 文件；对于 Windows 而言，是编辑 `C:\Windows\System32\drivers\etc\hosts` 文件，都是将第3步的内容追加到文件末尾。* |
 
 ### 2.2.3 禁用 IPv6
 
@@ -245,7 +244,9 @@ mkdir ~/hadoop
 cd ~/hadoop
 ```
 
-> 这里需要说明的是，许多教程都最终将 hadoop 放到了 `/usr/local/hadoop` 目录下，这样做会带来很多权限问题。而很多教程或者没办法，最后使用 `root` 用户操作一切，或者使用 `chown` 来解决权限冲突，这是非常不好的，很多时候是因为写这些教程的人对 Linux 不熟悉，把 Windows 的一些习惯带到了 Linux 里来。生产环境的搭建绝不是这么简单粗暴的改变所有权，更不可能是这样子滥用`root`权限。除了需要将 hadoop 放到符合 Linux 目录结构的位置外，包括配置文件和日志，也都应该指向正确的位置，并且建立适当的用户组，以及对不同的目录使用不同的权限，这将引入很多额外的工作，因此不适合在初学时涉及。对于开发和实验环境的搭建，我们这里的做法非常简单，足以胜任后续的学习、开发。
+| Note: |
+| :---- |
+| *这里需要说明的是，许多教程都最终将 hadoop 放到了 `/usr/local/hadoop` 目录下，这样做会带来很多权限问题。而很多教程或者没办法，最后使用 `root` 用户操作一切，或者使用 `chown` 来解决权限冲突，这是非常不好的，很多时候是因为写这些教程的人对 Linux 不熟悉，把 Windows 的一些习惯带到了 Linux 里来。生产环境的搭建绝不是这么简单粗暴的改变所有权，更不可能是这样子滥用`root`权限。除了需要将 hadoop 放到符合 Linux 目录结构的位置外，包括配置文件和日志，也都应该指向正确的位置，并且建立适当的用户组，以及对不同的目录使用不同的权限，这将引入很多额外的工作，因此不适合在初学时涉及。对于开发和实验环境的搭建，我们这里的做法非常简单，足以胜任后续的学习、开发。* |
 
 ```bash
 wget http://apache.dataguru.cn/hadoop/common/hadoop-1.2.1/hadoop-1.2.1-bin.tar.gz
@@ -296,7 +297,9 @@ export PATH=$PATH:$HOME/hadoop/hadoop-1.2.1/bin
 source ~/.profile
 ```
 
-> 这里注意到有的教程提到的是修改 `.bashrc` 文件。在很多情况下这是工作的，但是某些情况下则不能工作，因此[Ubuntu 官网关于环境变量的配置](https://help.ubuntu.com/community/EnvironmentVariables#A.2BAH4ALw.profile) 建议放在`.profile`文件中。
+| Note: |
+| :---- |
+| *这里注意到有的教程提到的是修改 `.bashrc` 文件。在很多情况下这是工作的，但是某些情况下则不能工作，因此[Ubuntu 官网关于环境变量的配置](https://help.ubuntu.com/community/EnvironmentVariables#A.2BAH4ALw.profile) 建议放在`.profile`文件中。* |
 
 
 ### 3.2.2 配置 `JAVA_HOME` 环境变量
@@ -318,7 +321,9 @@ JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64/
 
 > 这里虽然也有 PATH 环境变量，但是不要在这里修改它，这里是全局变量。
 
-> 有些教程建议修改 `/etc/profile` 文件，可是修改该文件后，`JAVA_HOME` 依旧是无法出现在 `ssh` 命令模式下的环境中，就导致了还必须同时设置 `conf/hadoop-env.sh` 文件中的 `JAVA_HOME`，否则，将会出现 `Error: JAVA_HOME is not set.` 的故障。可能是写教程的人不熟悉 `/etc/profile` 和 `/etc/environment` 的加载时间所致。这里我们只需修改 `/etc/environment`文件即可。
+| Note: |
+| :---- |
+| *有些教程建议修改 `/etc/profile` 文件，可是修改该文件后，`JAVA_HOME` 依旧是无法出现在 `ssh` 命令模式下的环境中，就导致了还必须同时设置 `conf/hadoop-env.sh` 文件中的 `JAVA_HOME`，否则，将会出现 `Error: JAVA_HOME is not set.` 的故障。可能是写教程的人不熟悉 `/etc/profile` 和 `/etc/environment` 的加载时间所致。这里我们只需修改 `/etc/environment`文件即可。* |
 
 然后，`sudo reboot`，重新启动虚拟机，以让全局环境变量生效。
 
@@ -354,8 +359,9 @@ cd hadoop-1.2.1/conf
     </property>
 ```
 
-> 这里如果不设置 `hadoop.tmp.dir`，Hadoop 是可以正常运行的。但是其 HDFS 存储空降则使用的是 `/tmp` 目录，即内存，这显然不符合大容量存储的思想，因此我们需要将其指定到硬盘上。在这里，我们使用了 `${user.home}` 变量，该变量代表的是用户主目录 `$HOME`。
-> 这个目录需要记住，因为后续排障过程中，可能会需要到这个目录中检查 `current/VERSION` 文件的`namespaceID`以及`storageID`等。
+| Note: |
+| :---- |
+| *这里如果不设置 `hadoop.tmp.dir`，Hadoop 是可以正常运行的。但是其 HDFS 存储空降则使用的是 `/tmp` 目录，即内存，这显然不符合大容量存储的思想，因此我们需要将其指定到硬盘上。在这里，我们使用了 `${user.home}` 变量，该变量代表的是用户主目录 `$HOME`。<br /><br /> 这个目录需要记住，因为后续排障过程中，可能会需要到这个目录中检查 `current/VERSION` 文件的`namespaceID`以及`storageID`等。*|
 
 #### `hdfs-site.xml`:
 
@@ -428,8 +434,9 @@ jps
 
 需要注意的是，单节点伪分布正确运行后，应该会有5个组件运行：`NameNode`、`DataNode`、`SecondaryNameNode`、`JobTracker`、以及`TaskTracker`。缺少任何一个，都说明配置上有所错误。需要回去检查各项配置。
 
-> 在出现故障后向论坛、朋友求助的时候，需要给对方提供你的 `conf` 目录下的配置文件、以及日志，否则对方无法理解你的故障可能的问题。
-> 日志目录：$HOME/hadoop/hadoop-1.2.1/logs
+| Note: |
+| :---- |
+| *在出现故障后向论坛、朋友求助的时候，需要给对方提供你的 `conf` 目录下的配置文件、以及日志，否则对方无法理解你的故障可能的问题。日志目录：$HOME/hadoop/hadoop-1.2.1/logs* |
 
 ### 3.3.2 运行示例程序
 
