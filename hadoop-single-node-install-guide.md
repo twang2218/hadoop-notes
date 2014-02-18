@@ -36,6 +36,7 @@
 | *我知道许多人会选择使用 `vi`，但是从易用性上，`nano` 要比 `vi` 简单。使用 `nano` 不需要去背那些 `vi` 命令和快捷键，很适合新手。`nano` 在许多 ubuntu 系统里都是默认安装的，不需要额外的安装的。在此写进安装命令只是以防万一 （比如在使用 `vmbuilder` 构建的精简版的 Ubuntu 中，很多命令都不会被安装）。* |
 
 > `unzip` 是可选的，但我们将来会用它对下载的 `.zip` 数据文件进行解压缩。
+
 > `htop` 也是可选的，但是使用 `htop` 对节点负载进行分析与观察是非常有帮助的。
 
 和 Windows 不同，在 Ubuntu 里，安装软件非常简单，只需要一条命令即可，系统会从网上找到需要的软件包进行下载并安装。而且，你不需要担心版本之间的依赖关系、是否互相有冲突、安装位置等等。安装上面的软件，只需执行：
@@ -196,7 +197,7 @@ sudo ifdown eth0 && sudo ifup eth0
 
 | Note: |
 | :---- |
-| *从这里开始，我们就可以不用在虚拟机窗口中配置了，我们可以使用 SSH 客户端（即终端），如[Putty](http://www.putty.org/)、[Bitvise SSH Client](http://www.bitvise.com/ssh-client-download)、[WinSCP](http://winscp.net/eng/docs/free_ssh_client_for_windows)、[Xshell](http://www.netsarang.com/products/xsh_overview.html)等工具来连接 `hadoop-master`。<br /><br /> 使用终端的好处是显而易见的，比如我们可以方便的复制、粘贴文字到终端窗口，也可以将里面的内容复制、粘贴出来。此外，上面的许多 SSH 客户端支持 SFTP，通过 SFTP 我们可以很轻松的将文件上传到 Linux 主机上。<br /><br /> 需要注意的是，在主机上也需要配置上述主机名和IP地址对应关系的，对于 Linux 来说，和第三步一样，配置 `/etc/hosts` 文件；对于 Windows 而言，是编辑 `C:\Windows\System32\drivers\etc\hosts` 文件，都是将第3步的内容追加到文件末尾。* |
+| *从这里开始，我们就可以不用在虚拟机窗口中配置了，我们可以使用 SSH 客户端（即终端），如[Putty](http://www.putty.org/)、[Bitvise SSH Client](http://www.bitvise.com/ssh-client-download)、[WinSCP](http://winscp.net/eng/docs/free_ssh_client_for_windows)、[Xshell](http://www.netsarang.com/products/xsh_overview.html)等工具来连接 `hadoop-master`。使用终端的好处是显而易见的，比如我们可以方便的复制、粘贴文字到终端窗口，也可以将里面的内容复制、粘贴出来。此外，上面的许多 SSH 客户端支持 SFTP，通过 SFTP 我们可以很轻松的将文件上传到 Linux 主机上。<br /><br /> 需要注意的是，在主机上也需要配置上述主机名和IP地址对应关系的，对于 Linux 来说，和第三步一样，配置 `/etc/hosts` 文件；对于 Windows 而言，是编辑 `C:\Windows\System32\drivers\etc\hosts` 文件，都是将第3步的内容追加到文件末尾。* |
 
 ### 2.2.3 禁用 IPv6
 
@@ -299,13 +300,13 @@ source ~/.profile
 
 | Note: |
 | :---- |
-| *这里注意到有的教程提到的是修改 `.bashrc` 文件。在很多情况下这是工作的，但是某些情况下则不能工作，因此[Ubuntu 官网关于环境变量的配置](https://help.ubuntu.com/community/EnvironmentVariables#A.2BAH4ALw.profile) 建议放在`.profile`文件中。* |
+| *这里注意到有的教程提到的是修改 `~/.bashrc` 文件。在很多情况下这是工作的，但是某些情况下则不能工作，因此[Ubuntu 官网关于环境变量的配置](https://help.ubuntu.com/community/EnvironmentVariables#A.2BAH4ALw.profile) 建议放在`~/.profile`文件中。* |
 
 
 ### 3.2.2 配置 `JAVA_HOME` 环境变量
 
 
-Hadoop 需要在使用 `JAVA_HOME` 环境变量。由于该环境变量将在多处使用，并会在 `ssh` 命令形式使用，因此，我们将在全局环境变量中配置：
+Hadoop 需要在使用 `JAVA_HOME` 环境变量。由于该环境变量将在多处使用，并会在 `ssh + 主机名 + 命令` 的形式使用，因此，我们将在全局环境变量中配置：
 
 ```bash
 sudo nano /etc/environment
@@ -436,7 +437,7 @@ jps
 
 | Note: |
 | :---- |
-| *在出现故障后向论坛、朋友求助的时候，需要给对方提供你的 `conf` 目录下的配置文件、以及日志，否则对方无法理解你的故障可能的问题。日志目录：$HOME/hadoop/hadoop-1.2.1/logs* |
+| *在出现故障后向论坛、朋友求助的时候，需要给对方提供你的 `conf` 目录下的配置文件、以及日志，否则对方无法理解你的故障可能的问题。日志目录：`$HOME/hadoop/hadoop-1.2.1/logs`* |
 
 ### 3.3.2 运行示例程序
 
@@ -480,7 +481,9 @@ hadoop fs -put ~/hadoop/data/book/input /data/book/input
 hadoop jar ~/hadoop/hadoop-1.2.1/hadoop-examples-1.2.1.jar wordcount /data/book/input /data/book/output
 ```
 
-> 在执行过程中，可以新开一个 SSH 终端窗口连接到 `hadoop-master`，然后运行命令 `htop` 来观察任务执行期间的节点负载情况，包括内存占用率、CPU占用率、最消耗资源的程序等等。这些信息将来可能会作为云性能优化调整的依据。
+| Note: |
+| :---- |
+| *在执行过程中，可以新开一个 SSH 终端窗口连接到 `hadoop-master`，然后运行命令 `htop` 来观察任务执行期间的节点负载情况，包括内存占用率、CPU占用率、最消耗资源的程序等等。这些信息将来可能会作为云性能优化调整的依据。*|
 
 执行结束后，会输出下面类似的输出：
 
