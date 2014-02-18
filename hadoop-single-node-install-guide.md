@@ -23,7 +23,8 @@
 
 首先，Hadoop 需要 Java 运行环境。
 
-> 这里，我们使用系统自带的 OpenJDK 7。关于是否应该使用 Oracle 的 JDK 的问题，在这里完全没有必要。在 Java 6 的年代，由于  Java 的开放源代码进程问题，OpenJDK 6 和 Oracle JDK 6 还是有一些不一致的，进入到 Java 7后，OpenJDK 和 Oracle JDK 已经一致了，所以可以放心的使用 OpenJDK 7。这一点 Hadoop 官方已经明确给出确认了，需要了解进一步信息的可以看这里：http://wiki.apache.org/hadoop/HadoopJavaVersions
+| 这里，我们使用系统自带的 OpenJDK 7。关于是否应该使用 Oracle 的 JDK 的问题，在这里完全没有必要。在 Java 6 的年代，由于 Java 的开放源代码进程问题，OpenJDK 6 和 Oracle JDK 6 还是有一些不一致的，进入到 Java 7后，OpenJDK 和 Oracle JDK 已经一致了，所以可以放心的使用 OpenJDK 7。这一点 Hadoop 官方已经明确给出确认了，需要了解进一步信息的可以看这里：http://wiki.apache.org/hadoop/HadoopJavaVersions |
+|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
 
 其次，Hadoop 需要使用 SSH 连接各个主机。即使是伪分布模式，也需要连接本机。所以需要安装 SSH 服务器。
 
@@ -234,7 +235,7 @@ sudo sysctl -p /etc/sysctl.d/10-disable-ipv6.conf
 这个文件可以下载到本地，在传到 Ubuntu 上，但是更好的办法是直接在 Ubuntu 中下载。由于我们已经配置好了静态 IP，因此现在可以在主机上使用 SSH 连接 `hadoop-master`了。
 
 ```bash
-ssh wombat@hadoop-master
+ssh hadoop-master
 ```
 
 登录进去后，我们准备 hadoop 的环境以及下载。我们将创建一个 `~/hadoop` 目录，以后所有的 hadoop 相关的软件都会放到该目录下。
