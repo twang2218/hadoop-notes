@@ -1,5 +1,6 @@
 **目录**  *generated with [DocToc](http://doctoc.herokuapp.com/)*
 
+- [前言](#前言)
 - [一、安装虚拟机](#一、安装虚拟机)
 - [二、准备安装环境](#二、准备安装环境)
 	- [2.1 安装所必须的软件](#21-安装所必须的软件)
@@ -29,6 +30,14 @@
 			- [执行 `WordCount` 示例程序](#执行-wordcount-示例程序)
 		- [3.3.3 停止 Hadoop](#333-停止-hadoop)
 	- [3.3 验证 Hadoop 已安装正常](#33-验证-hadoop-已安装正常)
+
+前言
+=============
+
+本安装指南是针对 Ubuntu Server 12.04 进行 Hadoop 1.x 单节点伪分布模式配置的。其它系统或其它版本请酌情调整配置方法。
+
+如果不是从 [github](https://github.com/twang2218/hadoop-notes/blob/master/hadoop-single-node-install-guide.md) 看到此文档，那么该文档很可能已经更新了。请访问 https://github.com/twang2218/hadoop-notes/blob/master/hadoop-single-node-install-guide.md 以获取最新版本的文档。
+
 
 一、安装虚拟机
 ================
